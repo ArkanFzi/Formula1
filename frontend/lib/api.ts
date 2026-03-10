@@ -7,6 +7,7 @@ export async function getLatestMeeting() {
   try {
     const res = await fetch(`${API_BASE_URL}/meetings?meeting_key=latest`, {
       next: { revalidate: 3600 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -24,6 +25,7 @@ export async function getLatestSession() {
   try {
     const res = await fetch(`${API_BASE_URL}/sessions?session_key=latest`, {
       next: { revalidate: 300 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -40,7 +42,8 @@ export async function getLatestSession() {
 export async function getDriverStandings(session_key: number | string = "latest") {
   try {
     const res = await fetch(`${API_BASE_URL}/championship_drivers?session_key=${session_key}`, {
-      next: { revalidate: 600 }
+      next: { revalidate: 600 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -57,7 +60,8 @@ export async function getDriverStandings(session_key: number | string = "latest"
 export async function getTeamStandings(session_key: number | string = "latest") {
   try {
     const res = await fetch(`${API_BASE_URL}/championship_teams?session_key=${session_key}`, {
-      next: { revalidate: 600 }
+      next: { revalidate: 600 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -75,6 +79,7 @@ export async function getDrivers(session_key: number | string = "latest") {
   try {
     const res = await fetch(`${API_BASE_URL}/drivers?session_key=${session_key}`, {
       next: { revalidate: 3600 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return [];
     return await res.json();
@@ -90,7 +95,8 @@ export async function getDrivers(session_key: number | string = "latest") {
 export async function getSessionResults(session_key: number | string = "latest") {
   try {
     const res = await fetch(`${API_BASE_URL}/session_result?session_key=${session_key}`, {
-      next: { revalidate: 300 }
+      next: { revalidate: 300 },
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -107,7 +113,8 @@ export async function getSessionResults(session_key: number | string = "latest")
 export async function getMeetings(year: number = 2024) {
   try {
     const res = await fetch(`${API_BASE_URL}/meetings?year=${year}`, {
-      next: { revalidate: 86400 } // Schedule rarely changes
+      next: { revalidate: 86400 }, // Schedule rarely changes
+      headers: { 'User-Agent': 'Mozilla/5.0' },
     });
     if (!res.ok) return [];
     const data = await res.json();

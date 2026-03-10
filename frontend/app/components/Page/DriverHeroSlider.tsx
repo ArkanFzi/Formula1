@@ -260,14 +260,15 @@ export default function DriverHeroSlider({ drivers, standings = [] }: DriverHero
               Representing {currentDriver.team_name} in the 2025 World Championship. Racing with number {currentDriver.driver_number}.
             </div>
             
-            <button
-              className="group relative px-8 py-4 overflow-hidden border border-white/10 hover:border-[#e10600]/50 transition-colors"
+            <Link
+              href={`/drivers/${currentDriver.driver_number}`}
+              className="group relative px-8 py-4 overflow-hidden border border-white/10 hover:border-[#e10600]/50 transition-colors inline-block text-center"
             >
               <div className="absolute inset-0 bg-[#e10600] translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300" />
               <span className="relative z-10 text-xs font-bold uppercase tracking-[0.2em] group-hover:text-white transition-colors">
                 Discover Details
               </span>
-            </button>
+            </Link>
           </motion.div>
         </div>
       </div>

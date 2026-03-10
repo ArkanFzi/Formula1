@@ -16,7 +16,8 @@ const BASE_URL = "https://api.openf1.org/v1";
 export async function fetchDrivers(): Promise<OpenF1Driver[]> {
   try {
     const res = await fetch(`${BASE_URL}/drivers?session_key=latest`, {
-      next: { revalidate: 300 },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
+      next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error("Failed to fetch drivers");
     const data: OpenF1Driver[] = await res.json();
@@ -37,15 +38,18 @@ export async function fetchDrivers(): Promise<OpenF1Driver[]> {
  * Fetch a specific driver by their driver number.
  */
 export async function fetchDriverByNumber(driver_number: number): Promise<OpenF1Driver | null> {
+  const url = `${BASE_URL}/drivers?driver_number=${driver_number}&session_key=latest`;
   try {
-    const res = await fetch(`${BASE_URL}/drivers?driver_number=${driver_number}&session_key=latest`, {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
       next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
     const data: OpenF1Driver[] = await res.json();
     return data[0] || null;
   } catch (error) {
-    console.error(`Fetch driver ${driver_number} error:`, error);
+    console.error(`DEBUG: fetchDriverByNumber failed for URL: ${url}`);
+    console.error(`DEBUG: Error details:`, error);
     return null;
   }
 }
@@ -56,6 +60,7 @@ export async function fetchDriverByNumber(driver_number: number): Promise<OpenF1
 export async function fetchDriverStandings(): Promise<DriverStanding[]> {
   try {
     const res = await fetch(`${BASE_URL}/championship_drivers?session_key=latest`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
       next: { revalidate: 600 },
     });
     if (!res.ok) return [];
@@ -71,7 +76,8 @@ export async function fetchDriverStandings(): Promise<DriverStanding[]> {
 export async function fetchDriverPerformance(driver_number: number): Promise<CarPerformance | null> {
   try {
     const res = await fetch(`${BASE_URL}/car_data?driver_number=${driver_number}&session_key=latest`, {
-      next: { revalidate: 10 }, // Frequent updates
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
+      next: { revalidate: 10 },
     });
     if (!res.ok) return null;
     const data: CarPerformance[] = await res.json();

@@ -1,7 +1,19 @@
+import { Suspense } from "react";
 import HeroSection from "./components/Page/HeroSection";
 import SessionResults from "./components/SessionResults";
 import DriverStandings from "./components/DriverStandings";
 import TeamStandings from "./components/TeamStandings";
+
+function LoadingSkeleton({ title }: { title: string }) {
+  return (
+    <div className="bg-white/5 border border-white/10 p-12 lg:skew-x-[-12deg] flex flex-col items-center justify-center min-h-[400px] animate-pulse">
+      <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 mb-4 font-[family-name:var(--font-space)]">
+        {`// LOADING.${title}`}
+      </div>
+      <div className="w-12 h-1 bg-white/10" />
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -40,15 +52,28 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
             <div className="lg:col-span-7">
-              <DriverStandings />
+              <Suspense fallback={<LoadingSkeleton title="DRIVER_STANDINGS" />}>
+                <DriverStandings />
+              </Suspense>
             </div>
             <div className="lg:col-span-5">
-              <TeamStandings />
+              <Suspense fallback={<LoadingSkeleton title="TEAM_STANDINGS" />}>
+                <TeamStandings />
+              </Suspense>
             </div>
           </div>
         </div>
       </section>
-      <SessionResults />
+
+      <Suspense fallback={
+        <section className="px-8 lg:px-24 py-32 bg-[#050706] text-center">
+          <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 animate-pulse">
+            {"// STREAMING.SESSION_RESULTS"}
+          </div>
+        </section>
+      }>
+        <SessionResults />
+      </Suspense>
     </main>
   );
 }
