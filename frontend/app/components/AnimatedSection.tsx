@@ -1,48 +1,29 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
-const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const fadeInVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
-
-const slideLeftVariants: Variants = {
-  hidden: { opacity: 0, x: -60 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const slideRightVariants: Variants = {
-  hidden: { opacity: 0, x: 60 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
 const VARIANTS = {
-  "fade-up": fadeUpVariants,
-  "fade-in": fadeInVariants,
-  "slide-left": slideLeftVariants,
-  "slide-right": slideRightVariants,
+  "fade-up": {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0 },
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+  },
+  "fade-in": {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    transition: { duration: 0.5, ease: "easeOut" as const },
+  },
+  "slide-left": {
+    hidden: { opacity: 0, x: -60 },
+    visible: { opacity: 1, x: 0 },
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+  },
+  "slide-right": {
+    hidden: { opacity: 0, x: 60 },
+    visible: { opacity: 1, x: 0 },
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+  },
 };
 
 interface AnimatedSectionProps {
@@ -60,7 +41,7 @@ export default function AnimatedSection({
   className,
   once = true,
 }: AnimatedSectionProps) {
-  const selectedVariant = VARIANTS[variant];
+  const { hidden, visible, transition } = VARIANTS[variant];
 
   return (
     <motion.div
@@ -68,13 +49,10 @@ export default function AnimatedSection({
       whileInView="visible"
       viewport={{ once, margin: "-80px" }}
       variants={{
-        hidden: selectedVariant.hidden,
+        hidden,
         visible: {
-          ...(selectedVariant.visible as object),
-          transition: {
-            ...((selectedVariant.visible as { transition?: object }).transition ?? {}),
-            delay,
-          },
+          ...visible,
+          transition: { ...transition, delay },
         },
       }}
       className={className}

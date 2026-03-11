@@ -51,3 +51,14 @@ export interface WeatherData {
   humidity: number;
   rainfall: number;
 }
+
+export type ChampionshipTeam = {
+  team_name: string;
+  position: number;
+  points: number;
+};
+
+export type OpenF1TeamInfo = {
+  team_name: string;
+  team_colour: string;
+};
