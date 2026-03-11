@@ -12,7 +12,7 @@ export async function getLatestMeeting() {
     if (!res.ok) return null;
     const data = await res.json();
     return data[0] || null;
-  } catch (error) {
+  } catch (error) {   
     console.error("DEBUG: getLatestMeeting fetch failed:", error);
     return null;
   }

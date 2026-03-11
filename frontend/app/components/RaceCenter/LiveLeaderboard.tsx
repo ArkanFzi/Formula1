@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { LapData, OpenF1Driver } from "../../types/f1";
 import { fetchAllLaps } from "../../lib/f1";
 
@@ -83,7 +83,7 @@ export default function LiveLeaderboard({ drivers }: LiveLeaderboardProps) {
               {/* Sectors */}
               <div className="flex items-center gap-1 px-4 shrink-0">
                 {[1, 2, 3].map(s => {
-                  const duration = item.lastLap ? (item.lastLap as any)[`duration_sector_${s}`] : 0;
+                  const duration = item.lastLap ? (item.lastLap as unknown as Record<string, number>)[`duration_sector_${s}`] ?? 0 : 0;
                   const isPurple = duration > 0 && duration < 25; // Dummy logic for purple
                   return (
                     <div 

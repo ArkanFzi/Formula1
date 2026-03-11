@@ -25,7 +25,7 @@ export default function WeatherConditionCard() {
       <div className="flex items-center gap-2">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
         <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] font-[family-name:var(--font-space)]">
-          // ATM.MONITOR_UNIT
+          {"// ATM.MONITOR_UNIT"}
         </span>
       </div>
 

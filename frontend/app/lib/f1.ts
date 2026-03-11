@@ -205,3 +205,15 @@ export async function fetchDriverLaps(driver_number: number): Promise<LapData[]>
     return [];
   }
 }
+
+/**
+ * Utility to upgrade driver headshot resolution.
+ * Replaces '1col' with '7col' in Formula 1 media URLs.
+ */
+export function getHDImage(url: string | null | undefined): string {
+  if (!url) return "/driver-placeholder.png";
+  if (url.includes("media.formula1.com") && url.includes(".transform/1col/image.png")) {
+    return url.replace(".transform/1col/image.png", ".transform/7col/image.png");
+  }
+  return url;
+}
