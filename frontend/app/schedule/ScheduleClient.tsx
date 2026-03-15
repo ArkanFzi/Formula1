@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AnimatedSection from "../components/AnimatedSection";
 
 type Meeting = {
   meeting_key: number;
@@ -22,51 +21,46 @@ export default function ScheduleClient({ meetings }: { meetings: Meeting[] }) {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6">
-      {meetings.map((meeting, index) => {
+    <div className="grid grid-cols-1 gap-4">
+      {meetings.map((meeting) => {
         const isCompleted = now !== null && new Date(meeting.date_end).getTime() < now;
         return (
-          <AnimatedSection
+          <div 
             key={meeting.meeting_key}
-            variant="fade-up"
-            delay={Math.min(index * 0.06, 0.6)}
+            className={`hud-glass group flex flex-col md:flex-row items-stretch transition-all duration-300 hover:glow-cyber hover:border-[#00ffd5]/40 ${isCompleted ? 'opacity-60 grayscale-[0.5] hover:grayscale-0' : ''}`}
           >
-            <div className="group flex flex-col md:flex-row bg-[#111111] rounded-xl border border-white/10 overflow-hidden hover:-translate-y-1 hover:border-[#ff5500] hover:shadow-[0_10px_30px_rgba(255,85,0,0.15)] transition-all duration-300">
-              {/* Date Box */}
-              <div className="bg-white/5 md:w-[120px] p-6 flex md:flex-col items-center justify-center md:border-r border-b md:border-b-0 border-white/10 gap-2 md:gap-0">
-                <span className="text-xl md:text-lg text-[#ff5500] font-extrabold uppercase leading-none">
-                  {new Date(meeting.date_start).toLocaleString("default", { month: "short" })}
-                </span>
-                <span className="text-3xl md:text-4xl font-extrabold leading-none text-white mt-0 md:mt-1">
-                  {new Date(meeting.date_start).getDate()}
-                </span>
-              </div>
+            {/* Date Block */}
+            <div className="md:w-32 p-6 flex md:flex-col items-center justify-center bg-white/5 border-r border-white/10">
+               <div className="text-[10px] font-technical text-white/40 mb-1">
+                 {new Date(meeting.date_start).toLocaleString("default", { month: "short" }).toUpperCase()}
+               </div>
+               <div className="font-heading-f1 text-4xl text-white italic">
+                 {new Date(meeting.date_start).getDate()}
+               </div>
+            </div>
 
-              {/* Meeting Info */}
-              <div className="p-6 flex-1 flex flex-col justify-center">
-                <div className="flex items-center gap-4 mb-2">
-                  <h2 className="text-2xl font-extrabold uppercase tracking-tight">{meeting.country_name}</h2>
-                  <div className="w-[30px] h-[20px] rounded-[2px] overflow-hidden shadow-md">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={meeting.country_flag} alt={`${meeting.country_name} flag`} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-                <h3 className="text-lg text-white/70 font-medium mb-1">{meeting.meeting_official_name}</h3>
-                <p className="text-[0.95rem] text-white/50">{meeting.circuit_short_name}</p>
-              </div>
+            {/* Info Block */}
+            <div className="flex-1 p-6 flex flex-col justify-center">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="w-1 h-6 bg-[#e10600] group-hover:bg-[#00ffd5] transition-colors" />
+                 <h2 className="font-heading-f1 text-2xl italic text-white uppercase">{meeting.country_name}</h2>
+                 <img src={meeting.country_flag} alt="" className="h-4 w-6 rounded-sm opacity-60 group-hover:opacity-100 transition-opacity" />
+               </div>
+               <div className="text-[10px] font-technical text-white/40 group-hover:text-white/60 transition-colors uppercase">
+                 {meeting.meeting_official_name}
+               </div>
+               <div className="text-[8px] font-technical text-white/20 mt-1 uppercase">
+                 CIRCUIT::{meeting.circuit_short_name.replace(/ /g, "_")}
+               </div>
+            </div>
 
-              {/* Status Box */}
-              <div className="p-6 md:w-[180px] flex items-center justify-center border-t md:border-t-0 md:border-l border-white/10">
-                <span className={`px-4 py-2 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors ${
-                  isCompleted
-                    ? "bg-white/5 text-white/40 group-hover:bg-[#ff5500]/20 group-hover:text-[#ff5500]"
-                    : "bg-[#ff5500]/10 text-[#ff5500] group-hover:bg-[#ff5500] group-hover:text-white"
-                }`}>
-                  {now === null ? "–" : isCompleted ? "Completed" : "Upcoming"}
-                </span>
+            {/* Status Block */}
+            <div className="md:w-32 p-6 flex items-center justify-center border-t md:border-t-0 md:border-l border-white/10 bg-white/5">
+              <div className={`px-4 py-1.5 font-heading-f1 italic text-xs tracking-widest ${isCompleted ? 'text-white/30 border border-white/10' : 'text-[#00ffd5] border border-[#00ffd5]/40 glow-cyber'}`}>
+                {isCompleted ? "COMPLETED" : "UPCOMING"}
               </div>
             </div>
-          </AnimatedSection>
+          </div>
         );
       })}
     </div>

@@ -7,6 +7,7 @@ type TeamStandingItem = {
 };
 
 export default async function TeamStandings() {
+<<<<<<< Updated upstream
   let standings = await getTeamStandings("latest");
   
   if (!standings || standings.length === 0) {
@@ -19,6 +20,17 @@ export default async function TeamStandings() {
       );
     }
   }
+=======
+  const [latestStandings, teamColors] = await Promise.all([
+    getTeamStandings("latest"),
+    fetchTeamColors(),
+  ]);
+
+  const standings =
+    latestStandings && latestStandings.length > 0
+      ? latestStandings
+      : await getTeamStandings(9839);
+>>>>>>> Stashed changes
 
   const maxPoints = standings[0]?.points_current || 1;
 

@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/drivers",     label: "Drivers",     code: "02" },
   { href: "/schedule",    label: "Schedule",    code: "03" },
   { href: "/race-center", label: "Race Center", code: "04" },
+  { href: "/analysis",    label: "Analysis",    code: "05" },
 ];
 
 export default function Navbar() {

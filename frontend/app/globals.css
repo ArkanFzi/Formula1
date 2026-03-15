@@ -1,38 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,900;1,900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --f1-red: #e10600;
+    --f1-black: #050706;
+    --f1-dark: #0a0f10;
+    --f1-cyber: #00ffd5;
+    --f1-glass: rgba(255, 255, 255, 0.03);
+    --f1-glass-border: rgba(255, 255, 255, 0.1);
+    
+    --font-barlow: 'Barlow Condensed', sans-serif;
+    --font-space: 'Space Grotesk', sans-serif;
+  }
+
   html,
   body {
     max-width: 100vw;
     overflow-x: hidden;
-    background-color: #0a0f0c;
+    background-color: var(--f1-black);
     color: #ffffff;
+    font-family: var(--font-space);
+    scrollbar-gutter: stable;
   }
+}
+
+/* Carbon Fiber Pattern */
+.bg-carbon {
+  background-color: var(--f1-black);
+  background-image: 
+    linear-gradient(45deg, #0a0a0a 25%, transparent 25%), 
+    linear-gradient(-45deg, #0a0a0a 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #0a0a0a 75%), 
+    linear-gradient(-45deg, transparent 75%, #0a0a0a 75%);
+  background-size: 4px 4px;
+}
+
+/* Glass HUD Elements */
+.hud-glass {
+  background: var(--f1-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--f1-glass-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--f1-red), transparent);
+}
+
+/* Technical HUD Borders */
+.hud-border {
+  border: 1px solid var(--f1-glass-border);
+  position: relative;
+}
+
+.hud-border::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid var(--f1-red);
+  border-right: 2px solid var(--f1-red);
+}
+
+/* Glow Effects */
+.glow-red {
+  box-shadow: 0 0 20px rgba(225, 6, 0, 0.2);
+}
+
+.glow-cyber {
+  box-shadow: 0 0 20px rgba(0, 255, 213, 0.2);
+}
+
+/* Typography Utilities */
+.font-technical {
+  font-family: var(--font-space);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+}
+
+.font-heading-f1 {
+  font-family: var(--font-barlow);
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 0.85;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0f0c;
+  background: var(--f1-black);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f1f2d;
-  border-radius: 4px;
+  background: var(--f1-red);
+  border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2a2a35;
+  background: #ff1a1a;
 }
 
-/* Infinite left scroll — 2× duplicate list, -50% = exact one full set width */
+/* Animations */
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.scanline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(to bottom, transparent, var(--f1-cyber), transparent);
+  opacity: 0.1;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+  z-index: 9999;
+}
+
 @keyframes marqueeLeft {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
-}
-
-@keyframes scanline {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(500%); }
 }

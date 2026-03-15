@@ -158,7 +158,7 @@ export async function fetchLatestWeather(): Promise<WeatherData | null> {
 export async function fetchAllLaps(): Promise<LapData[]> {
   try {
     const res = await fetch(`${BASE_URL}/laps?session_key=latest`, {
-      next: { revalidate: 20 },
+      next: { revalidate: 30 },
     });
     if (!res.ok) return [];
     return await res.json();
@@ -216,4 +216,18 @@ export function getHDImage(url: string | null | undefined): string {
     return url.replace(".transform/1col/image.png", ".transform/7col/image.png");
   }
   return url;
+}
+/**
+ * Fetch all pit stops for all drivers in the latest session.
+ */
+export async function fetchAllPitStops(): Promise<PitStop[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/pit?session_key=latest`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
 }

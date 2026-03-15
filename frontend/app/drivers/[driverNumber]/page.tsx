@@ -1,135 +1,179 @@
-import { Suspense } from "react";
+import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { fetchDriverByNumber, fetchLatestLap, getHDImage } from "../../lib/f1";
-import DriverProfileClient from "./DriverProfileClient";
+import { fetchDriverByNumber, fetchDriverStandings, fetchDriverPerformance, fetchDriverLaps } from "../../lib/f1";
+import DriverCareerStats from "../../components/Analysis/DriverCareerStats";
+import TelemetryDisplay from "../../components/RaceCenter/TelemetryDisplay";
+import LapHistoryChart from "../../components/Analysis/LapHistoryChart";
+import { FadeIn, SlideIn } from "../../components/Common/ClientMotion";
 
-// ── Sub-component for Dynamic Telemetry ──
-async function DriverTelemetry({ driverNum }: { driverNum: number }) {
-  const { fetchDriverPerformance } = await import("../../lib/f1");
-  const [performance] = await Promise.all([fetchDriverPerformance(driverNum)]);
+const BASE_URL = "https://api.openf1.org/v1";
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-      <div className="bg-white/[0.02] border border-white/5 p-8 lg:skew-x-[-6deg] hover:bg-white/[0.04] transition-colors relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-12 h-12 border-b border-l border-white/10 bg-white/5" />
-        <div className="lg:skew-x-[6deg]">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-6 flex items-center gap-2">
-            <div className="w-1 h-3 bg-[#e10600]" /> TELEMETRY snapshot
-          </h4>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-4xl font-[family-name:var(--font-barlow)] font-900 italic text-white group-hover:text-[#e10600] transition-colors">
-              {performance?.speed || "---"}
-            </span>
-            <span className="text-xs font-bold text-white/20 uppercase">KM/H</span>
-          </div>
-          <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">UNIT.MAX_VELOCITY</p>
-        </div>
-      </div>
-
-      <div className="bg-white/[0.02] border border-white/5 p-8 lg:skew-x-[-6deg] hover:bg-white/[0.04] transition-colors relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-12 h-12 border-b border-l border-white/10 bg-white/5" />
-        <div className="lg:skew-x-[6deg]">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-6 flex items-center gap-2">
-            <div className="w-1 h-3 bg-[#e10600]" /> DRIVE_TRAIN METRICS
-          </h4>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-4xl font-[family-name:var(--font-barlow)] font-900 italic text-white group-hover:text-[#e10600] transition-colors">
-              {performance ? `G${performance.n_gear}` : "N/A"}
-            </span>
-            <span className="text-xs font-bold text-white/20 uppercase">GEAR</span>
-          </div>
-          <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">UNIT.ACTIVE_RATIO</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TelemetrySkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 animate-pulse">
-      {[1, 2].map((i) => (
-        <div key={i} className="bg-white/5 border border-white/5 p-8 lg:skew-x-[-6deg] h-32 flex flex-col justify-center">
-          <div className="w-24 h-2 bg-white/10 mb-4" />
-          <div className="w-16 h-8 bg-white/10" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Main Page Component ──
 export default async function DriverProfilePage({
   params,
 }: {
   params: Promise<{ driverNumber: string }>;
 }) {
   const { driverNumber } = await params;
-  const driverNum = parseInt(driverNumber);
+  const num = parseInt(driverNumber);
 
-  if (isNaN(driverNum)) {
-    return (
-      <div className="min-h-screen bg-[#050706] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-black text-white/20 mb-4 tracking-tighter uppercase italic">Invalid ID</h1>
-          <Link href="/drivers" className="text-[#e10600] uppercase font-bold tracking-widest hover:underline">
-            ← Return to Roster
-          </Link>
-        </div>
-      </div>
-    );
+  const [driver, standingsRes, performance, lapData, sessionResults] = await Promise.all([
+    fetchDriverByNumber(num),
+    fetchDriverStandings(),
+    fetchDriverPerformance(num),
+    fetchDriverLaps(num),
+    fetch(`${BASE_URL}/session_result?session_key=latest`, { next: { revalidate: 300 } }).then(r => r.ok ? r.json() : [])
+  ]);
+
+  let standings = standingsRes;
+  if (!standings || standings.length === 0) {
+    // Fallback to a known session with standings if latest is empty
+    const fallbackRes = await fetch(`${BASE_URL}/championship_drivers?session_key=9839`);
+    if (fallbackRes.ok) standings = await fallbackRes.json();
   }
 
-  const [driver, latestLap] = await Promise.all([
-    fetchDriverByNumber(driverNum),
-    fetchLatestLap(driverNum),
-  ]);
+  const result = sessionResults.find((r: { driver_number: number }) => r.driver_number === num);
+  const gridPosition = result?.grid_position || 'N/A';
 
   if (!driver) {
     return (
-      <div className="min-h-screen bg-[#050706] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-black text-white/20 mb-4 tracking-tighter uppercase italic">Driver Not Found</h1>
-          <Link href="/drivers" className="text-[#e10600] uppercase font-bold tracking-widest hover:underline">
-            ← Return to Roster
-          </Link>
+      <main className="min-h-screen bg-[#050706] text-white flex items-center justify-center p-8 font-technical">
+        <div className="hud-glass p-12 text-center animate-pulse">
+           <div className="text-[#e10600] text-4xl font-heading-f1 mb-4 italic">ERROR::DRIVER_NOT_FOUND</div>
+           <div className="text-white/20 tracking-[0.5em] text-[10px]">FAILED_TO_LOCATE_HVT_UNIT_{driverNumber}</div>
         </div>
-      </div>
+      </main>
     );
   }
 
+  const standing = standings.find(s => s.driver_number === num) || null;
+  const teamColor = `#${driver.team_colour || "e10600"}`;
+
   return (
-    <main className="min-h-screen bg-[#050706] text-white overflow-hidden relative">
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundSize: '40px 40px', backgroundImage: 'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)' }} />
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#e10600]/5 to-transparent pointer-events-none" />
-
-      <div className="relative z-10 px-8 lg:px-24 py-8">
-        <Link href="/drivers" className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 hover:text-white transition-colors">
-          {"// DATABASE.DRIVERS"} <span className="text-[#e10600]">/</span> {driver.full_name}
-        </Link>
-      </div>
-
-      <div className="max-w-[1600px] mx-auto px-8 lg:px-24 py-12 relative z-10">
-        <DriverProfileClient
-          driver={driver}
-          latestLap={latestLap}
-          driverNum={driverNum}
-        >
-          {/* Telemetry streaming section */}
-          <Suspense fallback={<TelemetrySkeleton />}>
-            <DriverTelemetry driverNum={driverNum} />
-          </Suspense>
-
-          {/* The main image, passed as named slot via children access */}
-          <Image
-            src={getHDImage(driver.headshot_url)}
+    <main className="min-h-screen bg-[#050706] text-white overflow-x-hidden pt-0 selection:bg-[#e10600] selection:text-white">
+      {/* ── CINEMATIC HERO SECTION ── */}
+      <section className="relative h-screen w-full flex items-center overflow-hidden bg-black">
+        {/* Background Driver Image */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050706] via-transparent to-transparent z-10" />
+          <img
+            src={driver.headshot_url.replace("/1col/", "/9col/")}
             alt={driver.full_name}
-            fill
-            className="object-cover transform scale-110 group-hover:scale-[1.15] transition-transform duration-700 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100"
-            sizes="(max-width: 768px) 100vw, 40vw"
+            className="absolute right-0 bottom-0 h-full w-auto object-contain object-right-bottom opacity-70 grayscale-[0.2] contrast-[1.1] saturate-[1.1]"
           />
-        </DriverProfileClient>
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-20 max-w-[1400px] mx-auto w-full px-8 lg:px-24">
+          <div className="flex flex-col gap-4 max-w-4xl">
+             <Link href="/drivers" className="flex items-center gap-2 text-white/40 hover:text-white transition-colors mb-8 group">
+                <div className="w-8 h-[1px] bg-white/20 group-hover:bg-[#e10600] transition-colors" />
+                <span className="text-[10px] font-technical tracking-[0.4em] uppercase">BACK_TO_ROSTER</span>
+             </Link>
+             
+             <SlideIn delay={0.3}>
+                <div className="flex items-center gap-4">
+                   <div className="w-1.5 h-12" style={{ backgroundColor: teamColor }} />
+                   <div className="font-heading-f1 text-2xl italic text-white/60 tracking-widest">{driver.team_name}</div>
+                </div>
+             </SlideIn>
+
+             <FadeIn delay={0.4}>
+                <h1 className="text-5xl md:text-[7vw] font-heading-f1 italic font-900 leading-[0.85] uppercase tracking-tighter break-words">
+                   {driver.full_name.split(' ')[0]} <br />
+                   <span className="text-[#e10600]" style={{ filter: `drop-shadow(0 0 30px ${teamColor}44)` }}>{driver.full_name.split(' ').pop()}</span>
+                </h1>
+             </FadeIn>
+
+             <FadeIn delay={0.8}>
+                <div className="flex items-center gap-8 mt-12 pb-8 border-b border-white/5">
+                   <div className="flex flex-col">
+                      <span className="text-[10px] text-white/20 font-technical tracking-widest uppercase mb-1">Grid Position</span>
+                      <span className="text-5xl font-heading-f1 italic leading-none">{gridPosition}</span>
+                   </div>
+                   <div className="w-[1px] h-12 bg-white/10" />
+                   <div className="flex flex-col">
+                      <span className="text-[10px] text-white/20 font-technical tracking-widest uppercase mb-1">Season Pos</span>
+                      <span className="text-5xl font-heading-f1 italic leading-none text-[#00ffd5]">P{standing?.position_current || '??'}</span>
+                   </div>
+                   <div className="w-[1px] h-12 bg-white/10" />
+                   <div className="flex flex-col">
+                      <span className="text-[10px] text-white/20 font-technical tracking-widest uppercase mb-1">Points</span>
+                      <span className="text-5xl font-heading-f1 italic leading-none text-white/80">{standing?.points_current || 0}</span>
+                   </div>
+                </div>
+             </FadeIn>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 animate-bounce opacity-40">
+           <span className="text-[9px] font-technical tracking-[0.5em] uppercase text-white">DEEP_ANALYSIS</span>
+           <div className="w-[1px] h-12 bg-gradient-to-b from-white to-transparent" />
+        </div>
+      </section>
+
+      {/* ── TECHNICAL ANALYSIS SECTION ── */}
+      <section className="relative bg-[#050706] py-32 px-8 lg:px-24">
+        <div className="max-w-[1400px] mx-auto w-full">
+           <div className="flex flex-col mb-20">
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="h-px w-12 bg-[#e10600]" />
+                 <span className="text-[10px] font-technical text-[#e10600] tracking-[0.5em]">SYSTEM_IDENTITY.PERFORMANCE_INTELLIGENCE</span>
+              </div>
+              <h2 className="text-4xl md:text-6xl font-heading-f1 italic uppercase tracking-tighter">
+                 Technical <span className="text-[#e10600]">Data_Metrics</span>
+              </h2>
+           </div>
+
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              <div className="lg:col-span-12 xl:col-span-4 space-y-12">
+                 <DriverCareerStats driver={driver} standing={standing} />
+                 
+                 <div className="hud-glass p-8 space-y-6">
+                    <h3 className="font-heading-f1 italic text-xl tracking-widest text-[#00ffd5]">BIO_TELEMETRY</h3>
+                    <div className="space-y-4 text-[10px] font-technical text-white/40 uppercase tracking-widest">
+                       <div className="flex justify-between border-b border-white/5 pb-2">
+                          <span>Status</span>
+                          <span className="text-emerald-500">OPTIMAL</span>
+                       </div>
+                       <div className="flex justify-between border-b border-white/5 pb-2">
+                          <span>Heart Rate</span>
+                          <span>162 BPM</span>
+                       </div>
+                       <div className="flex justify-between border-b border-white/5 pb-2">
+                          <span>Oxygen Level</span>
+                          <span>98%</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="lg:col-span-12 xl:col-span-8 flex flex-col gap-12">
+                 <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                       <h3 className="font-heading-f1 italic text-2xl text-white/40 tracking-widest uppercase">Live_Telemetry_Feed</h3>
+                       <div className="text-[9px] font-technical text-[#00ffd5] animate-pulse">STREAMING_REALTIME_DATA</div>
+                    </div>
+                    <TelemetryDisplay initialData={performance} driverName={driver.name_acronym} />
+                 </div>
+
+                 <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                       <h3 className="font-heading-f1 italic text-2xl text-white/40 tracking-widest uppercase">Historical_Lap_Trace</h3>
+                       <div className="text-[9px] font-technical text-white/20">TOTAL_LAPS_PROCESSED: {lapData.length}</div>
+                    </div>
+                    <LapHistoryChart lapData={lapData} drivers={[driver]} />
+                 </div>
+              </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Aesthetic Footer Decor */}
+      <div className="w-full bg-black py-12 px-8 flex justify-between items-center border-t border-white/5 opacity-30 pointer-events-none">
+        <span className="text-[8px] font-technical tracking-widest">DS.HVT_UNIT.ANALYSIS.v5.0</span>
+        <span className="text-[8px] font-technical tracking-widest">SENSITIVE_DATA_PROTOCOL::ACTIVE</span>
       </div>
     </main>
   );

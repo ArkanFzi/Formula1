@@ -1,0 +1,16 @@
+{
+  "name": "Formula 1 Central",
+  "short_name": "F1 Central",
+  "description": "Premium Formula 1 Dashboard & Real-time Analytics",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050706",
+  "theme_color": "#e10600",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

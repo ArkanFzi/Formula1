@@ -34,18 +34,6 @@ export default function HeroCarousel({ drivers }: HeroCarouselProps) {
         }}
       />
       
-      {/* Scanning Line Effect */}
-      <div 
-        className="absolute inset-0 z-40 pointer-events-none overflow-hidden opacity-[0.05]"
-      >
-        <div 
-          className="w-full h-[100px] bg-gradient-to-b from-transparent via-white to-transparent"
-          style={{
-            animation: 'scanline 8s linear infinite',
-            transform: 'translateY(-100%)'
-          }}
-        />
-      </div>
 
       {/* Neon centre streak */}
       <div

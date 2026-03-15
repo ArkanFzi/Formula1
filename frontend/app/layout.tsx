@@ -17,8 +17,11 @@ const space = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Formula 1 Central",
-  description: "Elegant Formula 1 Dashboard and Standings",
+  title: "Formula 1 Central | Mission Control",
+  description: "Premium Formula 1 Dashboard & Real-time Analytics",
+  manifest: "/manifest.json",
+  themeColor: "#e10600",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
@@ -28,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${barlow.variable} ${space.variable} font-[family-name:var(--font-space)]`}>
+      <body className={`${barlow.variable} ${space.variable} font-[family-name:var(--font-space)] bg-carbon min-h-screen relative`}>
         <Navbar />
         {children}
       </body>
